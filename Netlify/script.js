@@ -6,46 +6,35 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const email = document.querySelector('#email').value;
         const submitButton = form.querySelector('button');
-        const originalButtonText = submitButton.textContent;
+        
+        // Immediately show success state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Subscribed!';
+        submitButton.style.backgroundColor = '#22c55e';
+        
+        // Clear the form immediately
+        form.reset();
         
         try {
-            // Disable button and show loading state
-            submitButton.disabled = true;
-            submitButton.textContent = 'Subscribing...';
-            
-            const response = await fetch('https://script.google.com/macros/s/AKfycbxN86rsiaRDULK8E-5fcIxRcDtKYUpgHXlV8eyKBrXAzJ4m_pq2xzA5kR9AIrqS1Cn_IA/exec', {
+            const response = await fetch('https://sports-newsletter-production.up.railway.app/api/subscribe', {
                 method: 'POST',
-                mode: 'no-cors', // Required for Google Apps Script
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: `email=${encodeURIComponent(email)}`
+                body: JSON.stringify({ email })
             });
 
-            // Clear the form
-            form.reset();
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error);
+            }
             
-            // Show success message
-            submitButton.textContent = 'Subscribed!';
-            submitButton.style.backgroundColor = '#22c55e'; // Green color for success
-            
-            // Reset button after 2 seconds
-            setTimeout(() => {
-                submitButton.textContent = originalButtonText;
-                submitButton.style.backgroundColor = '';
-                submitButton.disabled = false;
-            }, 2000);
-
         } catch (error) {
             console.error('Error:', error);
-            
-            // Show error state
-            submitButton.textContent = 'Error - Try Again';
-            submitButton.style.backgroundColor = '#ef4444'; // Red color for error
-            
+        } finally {
             // Reset button after 2 seconds
             setTimeout(() => {
-                submitButton.textContent = originalButtonText;
+                submitButton.textContent = 'Subscribe';
                 submitButton.style.backgroundColor = '';
                 submitButton.disabled = false;
             }, 2000);
